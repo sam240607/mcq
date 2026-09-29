@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { 
   User, 
@@ -12,11 +12,14 @@ import {
   FileText, 
   BarChart3, 
   ShieldCheck, 
+  GraduationCap,
   AlertCircle 
 } from 'lucide-react';
 import './Login.css';
 
 export default function Register() {
+  const location = useLocation();
+  const [role, setRole] = useState(location.state?.role || 'student');
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -32,10 +35,13 @@ export default function Register() {
     setError('');
     setSubmitting(true);
     try {
-      await register(name, email, password, 'student');
-      // Always redirect to login page after registration with success message
+      await register(name, email, password, role);
+      // Redirect to login page with matching role and success message
       navigate('/login', {
-        state: { message: 'Registration successful! Please log in with your credentials.' }
+        state: { 
+          message: `${role === 'admin' ? 'Admin' : 'Student'} registration successful! Please log in with your credentials.`,
+          role
+        }
       });
     } catch (err) {
       setError(err.message || 'Registration failed');
@@ -68,7 +74,10 @@ export default function Register() {
           </div>
 
           <p className="saec-hero-subtext">
-            Create your student account to take tests, track your progress, and perform better with a simple and secure platform.
+            {role === 'admin' 
+              ? 'Create an administrator account to set up exams, monitor student proctoring in real-time, and analyze test results.'
+              : 'Create your student account to take tests, track your progress, and perform better with a simple and secure platform.'
+            }
           </p>
 
           <div className="saec-features-list">
@@ -77,8 +86,8 @@ export default function Register() {
                 <FileText size={22} />
               </div>
               <div className="saec-feature-info">
-                <h4>Take Tests</h4>
-                <p>Anytime, Anywhere</p>
+                <h4>{role === 'admin' ? 'Manage Exams' : 'Take Tests'}</h4>
+                <p>{role === 'admin' ? 'Create & Schedule' : 'Anytime, Anywhere'}</p>
               </div>
             </div>
 
@@ -87,8 +96,8 @@ export default function Register() {
                 <BarChart3 size={22} />
               </div>
               <div className="saec-feature-info">
-                <h4>Track Progress</h4>
-                <p>View Scores & History</p>
+                <h4>{role === 'admin' ? 'Analytics & Reports' : 'Track Progress'}</h4>
+                <p>{role === 'admin' ? 'Comprehensive Insights' : 'View Scores & History'}</p>
               </div>
             </div>
 
@@ -97,8 +106,8 @@ export default function Register() {
                 <ShieldCheck size={22} />
               </div>
               <div className="saec-feature-info">
-                <h4>Secure & Reliable</h4>
-                <p>Your Data is Safe</p>
+                <h4>{role === 'admin' ? 'Live Proctoring' : 'Secure & Reliable'}</h4>
+                <p>{role === 'admin' ? 'Detect & Prevent Cheating' : 'Your Data is Safe'}</p>
               </div>
             </div>
           </div>
@@ -120,14 +129,39 @@ export default function Register() {
               <div className="saec-divider-pill" />
             </div>
 
+            {/* Role Toggle */}
+            <div className="saec-role-toggle">
+              <button 
+                type="button"
+                className={`saec-role-btn ${role === 'student' ? 'active' : ''}`}
+                onClick={() => setRole('student')}
+              >
+                <GraduationCap size={16} />
+                Student
+              </button>
+              <button 
+                type="button"
+                className={`saec-role-btn ${role === 'admin' ? 'active' : ''}`}
+                onClick={() => setRole('admin')}
+              >
+                <ShieldCheck size={16} />
+                Admin
+              </button>
+            </div>
+
             {/* Registration Header */}
             <div className="saec-login-header">
-              <div className="saec-cap-badge">
-                <UserPlus size={24} />
+              <div className={`saec-cap-badge ${role === 'admin' ? 'admin' : ''}`}>
+                {role === 'admin' ? <ShieldCheck size={24} /> : <UserPlus size={24} />}
               </div>
-              <h3 className="saec-login-title">Student Registration</h3>
+              <h3 className="saec-login-title">
+                {role === 'admin' ? 'Admin Registration' : 'Student Registration'}
+              </h3>
               <p className="saec-login-desc">
-                Create your student account to access online examinations and track your progress.
+                {role === 'admin'
+                  ? 'Create an administrator account to manage tests, questions, and students.'
+                  : 'Create your student account to access online examinations and track your progress.'
+                }
               </p>
             </div>
 
@@ -153,7 +187,7 @@ export default function Register() {
                     id="name"
                     type="text"
                     className="saec-input"
-                    placeholder="Enter your Full Name"
+                    placeholder={role === 'admin' ? 'Admin / Faculty Name' : 'Enter your Full Name'}
                     value={name}
                     onChange={(e) => setName(e.target.value)}
                     required
@@ -173,7 +207,7 @@ export default function Register() {
                     id="email"
                     type="email"
                     className="saec-input"
-                    placeholder="student@saec.ac.in"
+                    placeholder={role === 'admin' ? 'admin@saec.ac.in' : 'student@saec.ac.in'}
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     required
@@ -224,7 +258,7 @@ export default function Register() {
                   </>
                 ) : (
                   <>
-                    <span>Register</span>
+                    <span>Register as {role === 'admin' ? 'Admin' : 'Student'}</span>
                     <ArrowRight size={18} />
                   </>
                 )}
@@ -234,7 +268,7 @@ export default function Register() {
             {/* Footer Login Link */}
             <div className="saec-card-footer">
               <span>Already have an account?</span>
-              <Link to="/login">Sign in here</Link>
+              <Link to="/login" state={{ role }}>Sign in here</Link>
             </div>
 
             {/* Developed Credit */}

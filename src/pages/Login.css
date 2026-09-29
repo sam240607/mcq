@@ -303,6 +303,43 @@
   margin: 0 auto 24px auto;
 }
 
+/* Role Toggle */
+.saec-role-toggle {
+  display: flex;
+  background: #F1F5F9;
+  border-radius: 12px;
+  padding: 4px;
+  margin-bottom: 24px;
+  width: 100%;
+}
+
+.saec-role-btn {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 16px;
+  border: none;
+  background: transparent;
+  color: #64748B;
+  font-size: 0.9rem;
+  font-weight: 600;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.saec-role-btn:hover {
+  color: #0F172A;
+}
+
+.saec-role-btn.active {
+  background: #FFFFFF;
+  color: #0066FF;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
 /* Login Header */
 .saec-login-header {
   text-align: center;
@@ -320,6 +357,12 @@
   justify-content: center;
   margin: 0 auto 12px auto;
   box-shadow: 0 4px 12px rgba(0, 102, 255, 0.12);
+}
+
+.saec-cap-badge.admin {
+  background: #F3E8FF;
+  color: #9333EA;
+  box-shadow: 0 4px 12px rgba(147, 51, 234, 0.12);
 }
 
 .saec-login-title {

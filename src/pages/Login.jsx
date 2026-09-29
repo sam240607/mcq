@@ -18,17 +18,18 @@ import { api } from '../lib/api';
 import './Login.css';
 
 export default function Login() {
+  const location = useLocation();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [showReset, setShowReset] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [loginType, setLoginType] = useState(location.state?.role || 'student');
   const [error, setError] = useState('');
   const [submitting, setSubmitting] = useState(false);
 
   const { login, logout } = useAuth();
   const navigate = useNavigate();
-  const location = useLocation();
   const [successMsg, setSuccessMsg] = useState(location.state?.message || '');
 
   const handleSubmit = async (e) => {
@@ -50,6 +51,11 @@ export default function Login() {
         setShowReset(false);
       } else {
         const user = await login(email, password);
+        if (user.role !== loginType) {
+          await logout();
+          throw new Error(`Unauthorized: Account does not have ${loginType} privileges.`);
+        }
+        
         if (user.role === 'admin') {
           navigate('/admin');
         } else {
@@ -139,18 +145,46 @@ export default function Login() {
               <div className="saec-divider-pill" />
             </div>
 
-            {/* Student Login Title */}
+            {/* Login Type Toggle */}
+            {!showReset && (
+              <div className="saec-role-toggle">
+                <button 
+                  type="button"
+                  className={`saec-role-btn ${loginType === 'student' ? 'active' : ''}`}
+                  onClick={() => setLoginType('student')}
+                >
+                  <GraduationCap size={16} />
+                  Student
+                </button>
+                <button 
+                  type="button"
+                  className={`saec-role-btn ${loginType === 'admin' ? 'active' : ''}`}
+                  onClick={() => setLoginType('admin')}
+                >
+                  <ShieldCheck size={16} />
+                  Admin
+                </button>
+              </div>
+            )}
+
+            {/* Login Header */}
             <div className="saec-login-header">
-              <div className="saec-cap-badge">
-                <GraduationCap size={24} />
+              <div className={`saec-cap-badge ${loginType === 'admin' ? 'admin' : ''}`}>
+                {loginType === 'admin' ? <ShieldCheck size={24} /> : <GraduationCap size={24} />}
               </div>
               <h3 className="saec-login-title">
-                {showReset ? 'Reset Password' : 'Student Login'}
+                {showReset 
+                  ? 'Reset Password' 
+                  : (loginType === 'admin' ? 'Admin Login' : 'Student Login')
+                }
               </h3>
               <p className="saec-login-desc">
                 {showReset 
                   ? 'Enter your account email and new password to reset.' 
-                  : 'Access your tests, track your progress, and perform your best.'
+                  : (loginType === 'admin' 
+                      ? 'Manage examinations, monitor students, and analyze results.'
+                      : 'Access your tests, track your progress, and perform your best.'
+                    )
                 }
               </p>
             </div>
@@ -290,7 +324,7 @@ export default function Login() {
             {/* Footer Registration Link */}
             <div className="saec-card-footer">
               <span>Don't have an account?</span>
-              <Link to="/register">Register here</Link>
+              <Link to="/register" state={{ role: loginType }}>Register here</Link>
             </div>
 
             {/* Developed Credit */}
